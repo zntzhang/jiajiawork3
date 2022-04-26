@@ -45,17 +45,14 @@ public class ChajiUtils {
                 "徐子桐";
         String[] split = str.split("\n");
         List<String> persons = new ArrayList<>(Arrays.asList(split));
-        System.out.println(persons);
-        System.out.println(persons.size());
 
         String lizi = value;
 
         String[] split2 = lizi.split("\n");
         List<String> persons2 = new ArrayList<>(Arrays.asList(split2));
-        System.out.println(persons2);
 
         List<String> persons3 = new ArrayList<>();
-        for (String person: persons) {
+        for (String person : persons) {
             boolean contain = false;
             for (String person2 : persons2) {
                 if (person2.contains(person)) {
@@ -67,8 +64,7 @@ public class ChajiUtils {
                 persons3.add(person);
             }
         }
-        System.out.println(persons3);
-        return String.join(" , ",persons3);
+        return String.join(" , ", persons3);
 
     }
 
