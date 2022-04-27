@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
  * @create: 2022-04-26 16:49
  **/
 @Configuration
-@MapperScan("com.example.jiajiawork3.dao*")
 public class MybatisPlusConfig {
 
     @Bean
