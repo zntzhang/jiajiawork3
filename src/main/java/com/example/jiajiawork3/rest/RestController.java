@@ -11,6 +11,7 @@ import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
 import com.example.jiajiawork3.utils.DingTalkUtils;
 import com.example.jiajiawork3.utils.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -85,19 +86,7 @@ public class RestController {
         QueryWrapper<AutoAnswer> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("question", content.trim());
         List<AutoAnswer> autoAnswers = answerDao.selectList(queryWrapper);
-        String defaultAnswer = null;
-        String specifyAnswer = null;
-
-        for (AutoAnswer autoAnswer : autoAnswers) {
-            if (userId.equals(autoAnswer.getQuestionId())) {
-                specifyAnswer = autoAnswer.getAnswer();
-                break;
-            } else {
-                defaultAnswer = autoAnswer.getAnswer();
-            }
-        }
-        value = null;
-        if (org.springframework.util.StringUtils.isEmpty(specifyAnswer) && org.springframework.util.StringUtils.isEmpty(defaultAnswer)) {
+        if (CollectionUtils.isEmpty(autoAnswers)) {
             Set<String> all = answerDao.selectList(new QueryWrapper<>()).stream().map(AutoAnswer::getQuestion).collect(Collectors.toSet());
             String questionStr = "\r\n 找不同（接龙时使用）" +
                     "\r\n 喝水了 " +
@@ -105,8 +94,17 @@ public class RestController {
                     "\r\n 你要记住"
                     + String.join("\r\n", all);
             value = "emmm智商不够用了,我会这些：" + questionStr;
-        }
-        {
+        } else {
+            String defaultAnswer = null;
+            String specifyAnswer = null;
+            for (AutoAnswer autoAnswer : autoAnswers) {
+                if (userId.equals(autoAnswer.getQuestionId())) {
+                    specifyAnswer = autoAnswer.getAnswer();
+                    break;
+                } else {
+                    defaultAnswer = autoAnswer.getAnswer();
+                }
+            }
             value = !org.springframework.util.StringUtils.isEmpty(specifyAnswer) ? specifyAnswer : defaultAnswer;
         }
         return value;
