@@ -5,19 +5,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
-import com.dingtalk.api.request.OapiRobotSendRequest;
-import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.entity.AutoAnswer;
+import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
+import com.example.jiajiawork3.utils.DingTalkUtils;
 import com.example.jiajiawork3.utils.StringUtils;
-import com.taobao.api.ApiException;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,6 +40,12 @@ public class RestController {
         String value;
         if (content.contains("找不同")) {
             value = ChajiUtils.chaji(content);
+        } else if (content.contains("喝水了")) {
+            CacheUtils.set("flag", "false");
+            value = "好的主人，我隔一小时在问";
+        } else if (content.contains("没喝水")) {
+            CacheUtils.set("flag", "true");
+            value = "好的主人，我继续问";
         } else if (content.contains("你要记住")) {
             String question = StringUtils.subString(content, "说", "的时候");
             String answer = StringUtils.subStringEnd(content, "回复");
@@ -70,7 +74,7 @@ public class RestController {
 
 
         DingTalkClient client = new DefaultDingTalkClient(sessionWebhook);
-        text(client, userId, value);
+        DingTalkUtils.text(client, userId, value);
         return null;
     }
 
@@ -91,30 +95,6 @@ public class RestController {
         }
         value = org.springframework.util.StringUtils.isEmpty(specifyAnswer) ? (org.springframework.util.StringUtils.isEmpty(defaultAnswer) ? "emmm智商不够用了" : defaultAnswer) : specifyAnswer;
         return value;
-    }
-
-    private void text(DingTalkClient client, String userId, String str) {
-        try {
-            OapiRobotSendRequest request = new OapiRobotSendRequest();
-            request.setMsgtype("text");
-            OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
-            System.out.println(userId);
-
-            text.setContent(" @" + userId + "  \n  " +
-                    "报告宝宝，" + str);
-            request.setText(text);
-            OapiRobotSendRequest.At at = new OapiRobotSendRequest.At();
-            System.out.println(userId);
-            at.setAtUserIds(Collections.singletonList(
-                    userId
-            ));
-            at.setIsAtAll(false);
-            request.setAt(at);
-            OapiRobotSendResponse response = client.execute(request);
-            System.out.println(response.getBody());
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
     }
 
 
