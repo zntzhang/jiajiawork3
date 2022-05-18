@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -87,9 +87,8 @@ public class RestController {
         List<AutoAnswer> autoAnswers = answerDao.selectList(queryWrapper);
         String defaultAnswer = null;
         String specifyAnswer = null;
-        List<String> questions = new ArrayList<>();
+
         for (AutoAnswer autoAnswer : autoAnswers) {
-            questions.add(autoAnswer.getQuestion());
             if (userId.equals(autoAnswer.getQuestionId())) {
                 specifyAnswer = autoAnswer.getAnswer();
                 break;
@@ -97,12 +96,19 @@ public class RestController {
                 defaultAnswer = autoAnswer.getAnswer();
             }
         }
-        String questionStr = "\r\n 找不同（接龙时使用）" +
-                "\r\n 喝水了 " +
-                "\r\n 没喝水" +
-                "\r\n 你要记住"
-                + String.join("\r\n", questions);
-        value = org.springframework.util.StringUtils.isEmpty(specifyAnswer) ? (org.springframework.util.StringUtils.isEmpty(defaultAnswer) ? "emmm智商不够用了,我会这些："+ questionStr : defaultAnswer) : specifyAnswer;
+        value = null;
+        if (org.springframework.util.StringUtils.isEmpty(specifyAnswer) && org.springframework.util.StringUtils.isEmpty(defaultAnswer)) {
+            Set<String> all = answerDao.selectList(new QueryWrapper<>()).stream().map(AutoAnswer::getQuestion).collect(Collectors.toSet());
+            String questionStr = "\r\n 找不同（接龙时使用）" +
+                    "\r\n 喝水了 " +
+                    "\r\n 没喝水" +
+                    "\r\n 你要记住"
+                    + String.join("\r\n", all);
+            value = "emmm智商不够用了,我会这些：" + questionStr;
+        }
+        {
+            value = !org.springframework.util.StringUtils.isEmpty(specifyAnswer) ? specifyAnswer : defaultAnswer;
+        }
         return value;
     }
 
