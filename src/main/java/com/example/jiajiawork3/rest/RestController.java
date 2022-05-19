@@ -43,9 +43,9 @@ public class RestController {
         String value;
         if (content.contains("找不同")) {
             value = ChajiUtils.chaji(content);
-        } else if (content.contains("喝水了")) {
+        } else if (content.contains("喝水了") || content.contains("喝了")) {
             CacheUtils.set("flag", "false");
-            value = "好的主人，我隔一小时在问";
+            value = "宝宝好乖，爱宝宝";
         } else if (content.contains("没喝水")) {
             CacheUtils.set("flag", "true");
             value = "好的主人，我继续问";
@@ -89,7 +89,7 @@ public class RestController {
         if (CollectionUtils.isEmpty(autoAnswers)) {
             Set<String> all = answerDao.selectList(new QueryWrapper<>()).stream().map(AutoAnswer::getQuestion).collect(Collectors.toSet());
             String questionStr = "\r\n 找不同（接龙时使用）" +
-                    "\r\n 喝水了 " +
+                    "\r\n 喝了 " +
                     "\r\n 没喝水" +
                     "\r\n 你要记住"
                     + String.join("\r\n", all);

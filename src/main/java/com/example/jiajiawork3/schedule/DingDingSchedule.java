@@ -38,6 +38,7 @@ public class DingDingSchedule {
         } else {
             try {
                 Thread.sleep(1000 * 60 * 60);
+                CacheUtils.set("flag", "true");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
