@@ -30,7 +30,7 @@ public class DingDingSchedule {
         CacheUtils.set("flag", "true");
     }
 
-    @Scheduled(fixedDelay = 1000 * 60)
+    @Scheduled(fixedDelay = 1000 * 60 *2)
     public void job() {
         if (Objects.equals(CacheUtils.get("flag"), "true") && timeCalendar()) {
             DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=cb379b401501a65a35fdddea861a0c93cc78a951c3d406f1dc7ae9402e46ca29");
@@ -53,8 +53,8 @@ public class DingDingSchedule {
             Date nowTime = df.parse(df.format(new Date()));
 
             //上午的规定时间
-            Date amBeginTime = df.parse("7:00");
-            Date amEndTime = df.parse("23:00");
+            Date amBeginTime = df.parse("8:30");
+            Date amEndTime = df.parse("19:00");
 
             //设置当前时间
             Calendar date = Calendar.getInstance();
