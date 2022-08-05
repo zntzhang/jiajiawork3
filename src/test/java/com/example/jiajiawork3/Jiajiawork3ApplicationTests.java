@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
-import com.example.jiajiawork3.entity.AutoAnswer;
+import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.rest.RestController;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;

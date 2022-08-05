@@ -1,12 +1,16 @@
 package com.example.jiajiawork3.rest;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
-import com.example.jiajiawork3.entity.AutoAnswer;
+import com.example.jiajiawork3.dao.RainbowPiDao;
+import com.example.jiajiawork3.domain.RainbowPi;
+import com.example.jiajiawork3.domain.RainbowPiResponse;
+import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
 import com.example.jiajiawork3.utils.DingTalkUtils;
@@ -17,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +37,8 @@ import java.util.stream.Collectors;
 public class RestController {
     @Resource
     private AutoAnswerDao answerDao;
+    @Resource
+    private RainbowPiDao rainbowPiDao;
 
     @RequestMapping(value = "/robots", method = RequestMethod.POST)
     public String helloRobots(@RequestBody(required = false) JSONObject json) throws Exception {
@@ -43,9 +51,19 @@ public class RestController {
         String value;
         if (content.contains("找不同")) {
             value = ChajiUtils.chaji(content);
-        } else if (content.contains("喝水了") || content.contains("喝了")) {
+        } else if (content.contains("喝水了") || content.contains("喝了") || content.contains("放个屁")) {
             CacheUtils.set("flag", "false");
-            value = "宝宝好乖，爱宝宝";
+            String result = HttpUtil.get("http://api.tianapi.com/caihongpi/index?key=e713c19e916f111d29375e31f838880e");
+            RainbowPiResponse rainbowPiResponse = JSON.parseObject(result, RainbowPiResponse.class);
+            if (rainbowPiResponse != null && Objects.equals(rainbowPiResponse.getCode(), 200)) {
+                value = rainbowPiResponse.getNewslist().get(0).getContent();
+                RainbowPi rainbowPi = new RainbowPi();
+                rainbowPi.setContent(value);
+                rainbowPi.setCreated(new Date());
+                rainbowPiDao.insert(rainbowPi);
+            } else {
+                value = "宝宝好乖，爱宝宝";
+            }
         } else if (content.contains("没喝水")) {
             CacheUtils.set("flag", "true");
             value = "好的主人，我继续问";
@@ -90,6 +108,7 @@ public class RestController {
             Set<String> all = answerDao.selectList(new QueryWrapper<>()).stream().map(AutoAnswer::getQuestion).collect(Collectors.toSet());
             String questionStr = "\r\n 找不同（接龙时使用）" +
                     "\r\n 喝了 " +
+                    "\r\n 放个屁 " +
                     "\r\n 没喝水" +
                     "\r\n 你要记住"
                     + String.join("\r\n", all);
