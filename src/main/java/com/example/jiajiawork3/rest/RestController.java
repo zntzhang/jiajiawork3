@@ -1,5 +1,6 @@
 package com.example.jiajiawork3.rest;
 
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -8,19 +9,26 @@ import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.dao.RainbowPiDao;
+import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.domain.RainbowPi;
 import com.example.jiajiawork3.domain.RainbowPiResponse;
-import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
 import com.example.jiajiawork3.utils.DingTalkUtils;
 import com.example.jiajiawork3.utils.StringUtils;
+import com.example.jiajiawork3.utils.excel.CalculateWorkV2;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +47,41 @@ public class RestController {
     private AutoAnswerDao answerDao;
     @Resource
     private RainbowPiDao rainbowPiDao;
+    @Resource
+    private ResourceLoader resourceLoader;
+
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public String importExcel(MultipartFile excelFile, Integer num, HttpServletResponse response) throws Exception {
+        CalculateWorkV2.doExcel(excelFile.getInputStream(), num, response);
+        return "success";
+    }
+
+    @RequestMapping(value = "/excel/template", method = RequestMethod.POST)
+    public String importExcel(HttpServletResponse response) throws Exception {
+        InputStream inputStream = null;
+        ServletOutputStream servletOutputStream = null;
+        try {
+            String filename = "example.xls";
+            String path = "/excel/example.xls";
+            org.springframework.core.io.Resource resource = resourceLoader.getResource("classpath:" + path);
+            inputStream = resource.getInputStream();
+
+            response.setContentType("application/vnd.ms-excel");
+            response.addHeader("charset", "utf-8");
+            response.addHeader("Pragma", "no-cache");
+            response.setHeader("Content-Disposition", "attachment;filename=" + "test" + filename);
+            servletOutputStream = response.getOutputStream();
+            IoUtil.copy(inputStream, servletOutputStream);
+            response.flushBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+//            此处记得关闭输出Servlet流
+            IoUtil.close(servletOutputStream);
+            IoUtil.close(inputStream);
+        }
+        return "success";
+    }
 
     @RequestMapping(value = "/robots", method = RequestMethod.POST)
     public String helloRobots(@RequestBody(required = false) JSONObject json) throws Exception {
