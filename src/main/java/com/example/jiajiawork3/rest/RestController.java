@@ -62,8 +62,8 @@ public class RestController {
         ServletOutputStream servletOutputStream = null;
         try {
             String filename = "example.xls";
-            String path = "/excel/example.xls";
-            org.springframework.core.io.Resource resource = resourceLoader.getResource("classpath:" + path);
+            String path = "/home/zntzhang/excel/example.xls";
+            org.springframework.core.io.Resource resource = resourceLoader.getResource(path);
             inputStream = resource.getInputStream();
 
             response.setContentType("application/vnd.ms-excel");
