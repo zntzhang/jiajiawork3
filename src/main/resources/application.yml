@@ -4,6 +4,10 @@ server:
   servlet:
 #    context-path: /zszxz
     application-display-name: jiajiawork3
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
