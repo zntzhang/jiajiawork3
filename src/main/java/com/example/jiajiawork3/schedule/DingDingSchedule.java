@@ -49,6 +49,7 @@ public class DingDingSchedule {
     //判断是否在规定的时间内签到 nowTime 当前时间 beginTime规定开始时间 endTime规定结束时间
     public static boolean timeCalendar() {
         SimpleDateFormat df = new SimpleDateFormat("HH:mm");//设置日期格式
+        SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
         try {
             Date nowTime = df.parse(df.format(new Date()));
 
@@ -65,6 +66,14 @@ public class DingDingSchedule {
             //设置结束时间
             Calendar amEnd = Calendar.getInstance();
             amEnd.setTime(amEndTime);//上午结束时间
+
+            Date date2 = df2.parse(df2.format(new Date()));
+            //上午的规定时间
+            Date amBeginTime2 = df2.parse("2022-09-19");
+            Date amEndTime2 = df2.parse("2022-09-22");
+            if (date2.after(amBeginTime2) && date2.before(amEndTime2)) {
+                return false;
+            }
             //处于开始时间之后，和结束时间之前的判断
             return date.after(amBegin) && date.before(amEnd);
         } catch (ParseException e) {
