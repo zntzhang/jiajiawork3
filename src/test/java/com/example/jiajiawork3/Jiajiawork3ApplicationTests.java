@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.domain.AutoAnswer;
-import com.example.jiajiawork3.rest.RestController;
+import com.example.jiajiawork3.rest.DingingController;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ class Jiajiawork3ApplicationTests {
     @Autowired
     AutoAnswerDao answerDao;
     @Resource
-    RestController restController;
+    DingingController dingingController;
 
     @Test
     public void add() {
@@ -65,7 +65,7 @@ class Jiajiawork3ApplicationTests {
     @Test
     public void selectByWrapper2() {
 
-        System.out.println(restController.queryByQuestion("谁最帅","11"));
+        System.out.println(dingingController.queryByQuestion("谁最帅","11"));
     }
 
 
