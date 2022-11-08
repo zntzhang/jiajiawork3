@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
+import com.example.jiajiawork3.consts.CommonConst;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.dao.RainbowPiDao;
 import com.example.jiajiawork3.domain.AutoAnswer;
@@ -17,11 +18,13 @@ import com.example.jiajiawork3.utils.ChajiUtils;
 import com.example.jiajiawork3.utils.DingTalkUtils;
 import com.example.jiajiawork3.utils.StringUtils;
 import com.example.jiajiawork3.utils.excel.CalculateWorkV2;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -40,9 +43,9 @@ import java.util.stream.Collectors;
  * @Date: 2022/4/23 14:37
  * @Description:
  */
-@org.springframework.web.bind.annotation.RestController
+@RestController
 @RequestMapping(value = "/rest")
-public class RestController {
+public class DingingController implements InitializingBean {
     @Resource
     private AutoAnswerDao answerDao;
     @Resource
@@ -173,4 +176,13 @@ public class RestController {
     }
 
 
+    /**
+     * 每次发布后给宝宝提示发布了什么
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String msg = "1、 2小时提醒一次宝宝 2、 每日早安";
+        DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "海绵宝宝本次更新给宝宝带来以下服务: " + msg);
+
+    }
 }
