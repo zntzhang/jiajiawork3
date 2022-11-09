@@ -13,6 +13,7 @@ import com.example.jiajiawork3.dao.RainbowPiDao;
 import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.domain.RainbowPi;
 import com.example.jiajiawork3.domain.RainbowPiResponse;
+import com.example.jiajiawork3.schedule.DingDingSchedule;
 import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
 import com.example.jiajiawork3.utils.DingTalkUtils;
@@ -113,6 +114,8 @@ public class DingingController implements InitializingBean {
         } else if (content.contains("没喝水")) {
             CacheUtils.set("flag", "true");
             value = "好的主人，我继续问";
+        } else if (content.contains("早安")) {
+            value = DingDingSchedule.getZaoAnContent();
         } else if (content.contains("你要记住")) {
             String question = StringUtils.subString(content, "说", "的时候");
             String answer = StringUtils.subStringEnd(content, "回复");

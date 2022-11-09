@@ -47,9 +47,14 @@ public class DingDingSchedule {
 
     }
 
-    @Scheduled(cron = "0 0 8 * * ? *")
+    @Scheduled(cron = "0 0 8 * * ? ")
     public void job2() {
+        String content = getZaoAnContent();
+        DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, content);
+    }
 
+
+    public static String getZaoAnContent() {
         String result = HttpUtil.get("https://apis.tianapi.com/zaoan/index?key=e713c19e916f111d29375e31f838880e");
         ZaoAnResponse zaoAnResponse = JSON.parseObject(result, ZaoAnResponse.class);
         String content;
@@ -58,7 +63,7 @@ public class DingDingSchedule {
         } else {
             content = "宝宝好乖，爱宝宝";
         }
-        DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, content);
+        return content;
     }
 
     //判断是否在规定的时间内签到 nowTime 当前时间 beginTime规定开始时间 endTime规定结束时间
