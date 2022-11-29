@@ -1,6 +1,7 @@
 package com.example.jiajiawork3.rest;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -10,9 +11,10 @@ import com.dingtalk.api.DingTalkClient;
 import com.example.jiajiawork3.consts.CommonConst;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.dao.RainbowPiDao;
-import com.example.jiajiawork3.domain.AutoAnswer;
-import com.example.jiajiawork3.domain.RainbowPi;
-import com.example.jiajiawork3.domain.RainbowPiResponse;
+import com.example.jiajiawork3.domain.*;
+import com.example.jiajiawork3.domain.oa.OALateTime;
+import com.example.jiajiawork3.domain.oa.OALateTimeData;
+import com.example.jiajiawork3.domain.oa.OALateTimeDataResult;
 import com.example.jiajiawork3.schedule.DingDingSchedule;
 import com.example.jiajiawork3.utils.CacheUtils;
 import com.example.jiajiawork3.utils.ChajiUtils;
@@ -116,6 +118,8 @@ public class DingingController implements InitializingBean {
             value = "好的主人，我继续问";
         } else if (content.contains("早安")) {
             value = DingDingSchedule.getZaoAnContent();
+        } else if (content.contains("迟到")) {
+            value = late(content);
         } else if (content.contains("你要记住")) {
             String question = StringUtils.subString(content, "说", "的时候");
             String answer = StringUtils.subStringEnd(content, "回复");
@@ -146,6 +150,28 @@ public class DingingController implements InitializingBean {
         DingTalkClient client = new DefaultDingTalkClient(sessionWebhook);
         DingTalkUtils.text(client, userId, value);
         return null;
+    }
+
+    private String late(String content) {
+        String cookie = StringUtils.subStringEnd(content, "|");
+        System.out.println(cookie);
+        String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-11\",\"userId\":3330}}";
+        String result = HttpRequest.post("http://oaplus.raycloud.com/oldAPI/reqOld")
+                .body(json)
+                .cookie(org.springframework.util.StringUtils.isEmpty(cookie) ? "cna=dDRqG4JhZSECAbeGbtJFO37O; TB_GTA=%7B%22pf%22%3A%7B%22cd%22%3A%22.raycloud.com%22%7D%2C%22uk%22%3A%225f3e2de41f9f0300017a49c9%22%7D; isg=BC4uXzBmwWItZTXZm-Z4FILBf4LwL_Ip-NW4nlj3mjHsO86VwL9COdQ686fX4-pB; super_memSessionIdoa=0092585f914de58df41d7ef5f988474b602b2494cebc8df0a5ab0ce765e7b65f7be6770ec29d7086806ed416617a7519; superuseragentoa=4003a5039f0e8f7a5ba7cc0603669c089e9e77724e6c62093d768ecdbefa044b8e3cf58aabdf6a5762aba6d8ac9998027db2083301dcb8d1ee8dcd062c830a8cb8bcb576a87cde656d1383b848ef44b2726b484ffdfa4a13c32a24277a14904adf0ad0e286a68047abc3f7b3eaa2319b0c30cd5649afba15c4fc5f30aa86b2e4fd8e42ce54617e956bfe378e20f0f115033e071eda1ff2e0eed51c339e6f9ecb240c34ad6856e2c8942cf44e83b3f87d; JSESSIONID=C9A19311B743717592D287BD17AE7FB2" : cookie)
+                .execute().body();
+        System.out.println(result);
+        OALateTime oaLateTime = JSON.parseObject(result, OALateTime.class);
+        if (oaLateTime != null && Objects.equals(oaLateTime.getStatus(), 200)) {
+            OALateTimeData data = oaLateTime.getData();
+            List<OALateTimeDataResult> oaLateTimeDataResults = JSON.parseArray(data.getResult(), OALateTimeDataResult.class);
+            int sum = 0;
+            for (OALateTimeDataResult oaLateTimeDataResult : oaLateTimeDataResults) {
+                sum += oaLateTimeDataResult.getLateTime();
+            }
+            return "11月迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
+        }
+        return "报错啦";
     }
 
     public String queryByQuestion(String content, String userId) {
