@@ -158,7 +158,8 @@ public class DingingController implements InitializingBean {
         String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-11\",\"userId\":3330}}";
         String result = HttpRequest.post("http://oaplus.raycloud.com/oldAPI/reqOld")
                 .body(json)
-                .cookie(org.springframework.util.StringUtils.isEmpty(cookie) ? "cna=dDRqG4JhZSECAbeGbtJFO37O; TB_GTA=%7B%22pf%22%3A%7B%22cd%22%3A%22.raycloud.com%22%7D%2C%22uk%22%3A%225f3e2de41f9f0300017a49c9%22%7D; isg=BC4uXzBmwWItZTXZm-Z4FILBf4LwL_Ip-NW4nlj3mjHsO86VwL9COdQ686fX4-pB; super_memSessionIdoa=0092585f914de58df41d7ef5f988474b602b2494cebc8df0a5ab0ce765e7b65f7be6770ec29d7086806ed416617a7519; superuseragentoa=4003a5039f0e8f7a5ba7cc0603669c089e9e77724e6c62093d768ecdbefa044b8e3cf58aabdf6a5762aba6d8ac9998027db2083301dcb8d1ee8dcd062c830a8cb8bcb576a87cde656d1383b848ef44b2726b484ffdfa4a13c32a24277a14904adf0ad0e286a68047abc3f7b3eaa2319b0c30cd5649afba15c4fc5f30aa86b2e4fd8e42ce54617e956bfe378e20f0f115033e071eda1ff2e0eed51c339e6f9ecb240c34ad6856e2c8942cf44e83b3f87d; JSESSIONID=C9A19311B743717592D287BD17AE7FB2" : cookie)
+                .header( "Token","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMzMwIn0.p8SbXmR5IBYWNL69i1Xu_KQND17rd9F7uJH1j3OX-jg")
+                .cookie("JSESSIONID=" + (org.springframework.util.StringUtils.isEmpty(cookie) ? "289887390E4F6C97020E22931EB0BDCB" : cookie))
                 .execute().body();
         System.out.println(result);
         OALateTime oaLateTime = JSON.parseObject(result, OALateTime.class);
@@ -210,7 +211,7 @@ public class DingingController implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        String msg = "1、 2小时提醒一次宝宝 2、 每日早安";
+        String msg = "1迟到";
         DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "海绵宝宝本次更新给宝宝带来以下服务: " + msg);
 
     }
