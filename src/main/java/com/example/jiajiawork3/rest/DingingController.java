@@ -4,6 +4,7 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dingtalk.api.DefaultDingTalkClient;
@@ -12,8 +13,6 @@ import com.example.jiajiawork3.consts.CommonConst;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.dao.RainbowPiDao;
 import com.example.jiajiawork3.domain.*;
-import com.example.jiajiawork3.domain.oa.OALateTime;
-import com.example.jiajiawork3.domain.oa.OALateTimeData;
 import com.example.jiajiawork3.domain.oa.OALateTimeDataResult;
 import com.example.jiajiawork3.schedule.DingDingSchedule;
 import com.example.jiajiawork3.utils.CacheUtils;
@@ -152,7 +151,7 @@ public class DingingController implements InitializingBean {
         return null;
     }
 
-    private String late(String content) {
+    public String late(String content) {
         String cookie = StringUtils.subStringEnd(content, "|");
         System.out.println(cookie);
         String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-11\",\"userId\":3330}}";
@@ -162,17 +161,20 @@ public class DingingController implements InitializingBean {
                 .cookie("JSESSIONID=" + (org.springframework.util.StringUtils.isEmpty(cookie) ? "289887390E4F6C97020E22931EB0BDCB" : cookie))
                 .execute().body();
         System.out.println(result);
-        OALateTime oaLateTime = JSON.parseObject(result, OALateTime.class);
-        if (oaLateTime != null && Objects.equals(oaLateTime.getStatus(), 200)) {
-            OALateTimeData data = oaLateTime.getData();
-            List<OALateTimeDataResult> oaLateTimeDataResults = JSON.parseArray(data.getResult(), OALateTimeDataResult.class);
-            int sum = 0;
-            for (OALateTimeDataResult oaLateTimeDataResult : oaLateTimeDataResults) {
-                sum += oaLateTimeDataResult.getLateTime();
-            }
-            return "11月迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
+        JSONObject jsonObject = JSON.parseObject(result);
+        Integer status = jsonObject.getInteger("status");
+        if (!Objects.equals(status, 200)) {
+            return jsonObject.getString("data");
         }
-        return "报错啦";
+        JSONObject data = jsonObject.getJSONObject("data");
+        JSONObject result1 = data.getJSONObject("result");
+        JSONArray data1 = result1.getJSONArray("data");
+        List<OALateTimeDataResult> oaLateTimeDataResults1 = data1.toJavaList(OALateTimeDataResult.class);
+        int sum = 0;
+        for (OALateTimeDataResult oaLateTimeDataResult : oaLateTimeDataResults1) {
+            sum += oaLateTimeDataResult.getLateTime();
+        }
+        return "11月迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
     }
 
     public String queryByQuestion(String content, String userId) {
