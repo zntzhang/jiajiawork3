@@ -154,7 +154,7 @@ public class DingingController implements InitializingBean {
     public String late(String content) {
         String cookie = StringUtils.subStringEnd(content, "|");
         System.out.println(cookie);
-        String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-11\",\"userId\":3330}}";
+        String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-12\",\"userId\":3330}}";
         String result = HttpRequest.post("http://oaplus.raycloud.com/oldAPI/reqOld")
                 .body(json)
                 .header( "Token","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMzMwIn0.p8SbXmR5IBYWNL69i1Xu_KQND17rd9F7uJH1j3OX-jg")
