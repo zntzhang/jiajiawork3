@@ -1,5 +1,6 @@
 package com.example.jiajiawork3;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -74,6 +75,11 @@ class Jiajiawork3ApplicationTests {
         Page<AutoAnswer> page = new Page<>(1, 2);
         IPage<AutoAnswer> autoAnswerIPage = answerDao.selectPage(page, null);
         System.out.println(autoAnswerIPage);
+    }
+    @Test
+    public void month() {
+        String format = DateUtil.format(DateUtil.date(), "yyyy-MM");
+        System.out.println(format);
     }
 
 

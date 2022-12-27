@@ -1,5 +1,6 @@
 package com.example.jiajiawork3.rest;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
@@ -154,7 +155,8 @@ public class DingingController implements InitializingBean {
     public String late(String content) {
         String cookie = StringUtils.subStringEnd(content, "|");
         System.out.println(cookie);
-        String json = "{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"2022-12\",\"userId\":3330}}";
+        String format = DateUtil.format(DateUtil.date(), "yyyy-MM");
+        String json = String.format("{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"%s\",\"userId\":3330}}", format);
         String result = HttpRequest.post("http://oaplus.raycloud.com/oldAPI/reqOld")
                 .body(json)
                 .header( "Token","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMzMwIn0.p8SbXmR5IBYWNL69i1Xu_KQND17rd9F7uJH1j3OX-jg")
@@ -174,7 +176,7 @@ public class DingingController implements InitializingBean {
         for (OALateTimeDataResult oaLateTimeDataResult : oaLateTimeDataResults1) {
             sum += oaLateTimeDataResult.getLateTime();
         }
-        return "11月迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
+        return format+"迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
     }
 
     public String queryByQuestion(String content, String userId) {
