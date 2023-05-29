@@ -13,7 +13,9 @@ import com.dingtalk.api.DingTalkClient;
 import com.example.jiajiawork3.consts.CommonConst;
 import com.example.jiajiawork3.dao.AutoAnswerDao;
 import com.example.jiajiawork3.dao.RainbowPiDao;
-import com.example.jiajiawork3.domain.*;
+import com.example.jiajiawork3.domain.AutoAnswer;
+import com.example.jiajiawork3.domain.RainbowPi;
+import com.example.jiajiawork3.domain.RainbowPiResponse;
 import com.example.jiajiawork3.domain.oa.OALateTimeDataResult;
 import com.example.jiajiawork3.schedule.DingDingSchedule;
 import com.example.jiajiawork3.utils.CacheUtils;
@@ -23,7 +25,6 @@ import com.example.jiajiawork3.utils.StringUtils;
 import com.example.jiajiawork3.utils.excel.CalculateWorkV2;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,8 +39,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @Auther: zhangtao
@@ -159,7 +158,7 @@ public class DingingController implements InitializingBean {
         String json = String.format("{\"url\":\"/attendance/detail-new\",\"method\":\"HTTP_POST\",\"paramMap\":{\"date\":\"%s\",\"userId\":3330}}", format);
         String result = HttpRequest.post("http://oaplus.raycloud.com/oldAPI/reqOld")
                 .body(json)
-                .header( "Token","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMzMwIn0.p8SbXmR5IBYWNL69i1Xu_KQND17rd9F7uJH1j3OX-jg")
+                .header("Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMzMwIn0.p8SbXmR5IBYWNL69i1Xu_KQND17rd9F7uJH1j3OX-jg")
                 .cookie("JSESSIONID=" + (org.springframework.util.StringUtils.isEmpty(cookie) ? "289887390E4F6C97020E22931EB0BDCB" : cookie))
                 .execute().body();
         System.out.println(result);
@@ -176,37 +175,18 @@ public class DingingController implements InitializingBean {
         for (OALateTimeDataResult oaLateTimeDataResult : oaLateTimeDataResults1) {
             sum += oaLateTimeDataResult.getLateTime();
         }
-        return format+"迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
+        return format + "迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
     }
 
     public String queryByQuestion(String content, String userId) {
-        String value;
-        QueryWrapper<AutoAnswer> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("question", content.trim());
-        List<AutoAnswer> autoAnswers = answerDao.selectList(queryWrapper);
-        if (CollectionUtils.isEmpty(autoAnswers)) {
-            Set<String> all = answerDao.selectList(new QueryWrapper<>()).stream().map(AutoAnswer::getQuestion).collect(Collectors.toSet());
-            String questionStr = "\r\n 找不同（接龙时使用）" +
-                    "\r\n 喝了 " +
-                    "\r\n 放个屁 " +
-                    "\r\n 没喝水" +
-                    "\r\n 你要记住"
-                    + String.join("\r\n", all);
-            value = "emmm智商不够用了,我会这些：" + questionStr;
-        } else {
-            String defaultAnswer = null;
-            String specifyAnswer = null;
-            for (AutoAnswer autoAnswer : autoAnswers) {
-                if (userId.equals(autoAnswer.getQuestionId())) {
-                    specifyAnswer = autoAnswer.getAnswer();
-                    break;
-                } else {
-                    defaultAnswer = autoAnswer.getAnswer();
-                }
-            }
-            value = !org.springframework.util.StringUtils.isEmpty(specifyAnswer) ? specifyAnswer : defaultAnswer;
+
+        String result = HttpUtil.get(String.format("http://api.tianapi.com/caihongpi/index?key=e713c19e916f111d29375e31f838880ee&question=%s", content.trim()));
+        JSONObject jsonObject = JSON.parseObject(result);
+        if (jsonObject != null && jsonObject.getInteger("code") == 200) {
+            return jsonObject.getJSONObject("result").getString("reply");
+
         }
-        return value;
+        return "么么哒";
     }
 
 
@@ -215,8 +195,7 @@ public class DingingController implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        String msg = "1迟到";
-        DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "海绵宝宝本次更新给宝宝带来以下服务: " + msg);
+        DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "海绵宝宝重启成功");
 
     }
 }
