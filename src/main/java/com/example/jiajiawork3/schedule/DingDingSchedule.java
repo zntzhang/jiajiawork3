@@ -32,7 +32,7 @@ public class DingDingSchedule {
         CacheUtils.set("flag", "true");
     }
 
-    @Scheduled(fixedDelay = 1000 * 60 * 2)
+//    @Scheduled(fixedDelay = 1000 * 60 * 2)
     public void job() {
         if (Objects.equals(CacheUtils.get("flag"), "true") && timeCalendar()) {
             DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "宝宝喝水了吗?");
@@ -52,6 +52,18 @@ public class DingDingSchedule {
         String content = getZaoAnContent();
         DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, content);
     }
+
+    @Scheduled(cron = "0 0 15 * * ?")
+    public void job3() {
+        LocalDate today = LocalDate.now();
+        LocalDate lastDayOfMonth = today.withDayOfMonth(today.lengthOfMonth());
+
+        if (today.equals(lastDayOfMonth)) {
+            DingTalkUtils.text(DingTalkUtils.get(), CommonConst.GEGE_ID, "今天是这个月最后一天，注意考勤");
+        } else {
+        }
+    }
+
 
 
     public static String getZaoAnContent() {
