@@ -180,7 +180,7 @@ public class DingingController implements InitializingBean {
 
     public String queryByQuestion(String content, String userId) {
 
-        String result = HttpUtil.get(String.format("http://api.tianapi.com/caihongpi/index?key=e713c19e916f111d29375e31f838880ee&question=%s", content.trim()));
+        String result = HttpUtil.get(String.format("https://apis.tianapi.com/robot/index?key=e713c19e916f111d29375e31f838880e&question=%s", content.trim()));
         JSONObject jsonObject = JSON.parseObject(result);
         if (jsonObject != null && jsonObject.getInteger("code") == 200) {
             return jsonObject.getJSONObject("result").getString("reply");
