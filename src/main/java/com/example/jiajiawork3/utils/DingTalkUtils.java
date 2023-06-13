@@ -27,8 +27,7 @@ public class DingTalkUtils {
             OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
             System.out.println(userId);
 
-            text.setContent(" @" + userId + "  \n  " +
-                    "报告宝宝，" + str);
+            text.setContent(" @" + userId + "  \n  " + str);
             request.setText(text);
             OapiRobotSendRequest.At at = new OapiRobotSendRequest.At();
             System.out.println(userId);
