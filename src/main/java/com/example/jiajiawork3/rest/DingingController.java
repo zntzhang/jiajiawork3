@@ -16,6 +16,9 @@ import com.example.jiajiawork3.dao.RainbowPiDao;
 import com.example.jiajiawork3.domain.AutoAnswer;
 import com.example.jiajiawork3.domain.RainbowPi;
 import com.example.jiajiawork3.domain.RainbowPiResponse;
+import com.example.jiajiawork3.domain.chatgpt.ChatChoice;
+import com.example.jiajiawork3.domain.chatgpt.ChatCompletionResponse;
+import com.example.jiajiawork3.domain.chatgpt.Message;
 import com.example.jiajiawork3.domain.oa.OALateTimeDataResult;
 import com.example.jiajiawork3.schedule.DingDingSchedule;
 import com.example.jiajiawork3.utils.CacheUtils;
@@ -178,12 +181,20 @@ public class DingingController implements InitializingBean {
         return format + "迟到" + sum + "分钟" + (sum > 100 ? "已超" : "未超" + "100分钟");
     }
 
-    public String queryByQuestion(String content, String userId) {
+    public static String queryByQuestion(String content, String userId) {
 
-        String result = HttpUtil.get(String.format("https://apis.tianapi.com/robot/index?key=e713c19e916f111d29375e31f838880e&question=%s", content.trim()));
-        JSONObject jsonObject = JSON.parseObject(result);
-        if (jsonObject != null && jsonObject.getInteger("code") == 200) {
-            return jsonObject.getJSONObject("result").getString("reply");
+//        String result = HttpUtil.get(String.format("https://apis.tianapi.com/robot/index?key=e713c19e916f111d29375e31f838880e&question=%s", content.trim()));
+        String result = openApi(content.trim());
+        ChatCompletionResponse response = JSON.parseObject(result, ChatCompletionResponse.class);
+        if (response != null) {
+            // 读取Json
+            List<ChatChoice> choices = response.getChoices();
+            if (choices == null || choices.isEmpty()) {
+                return "么么哒";
+            }
+            Message delta = choices.get(0).getMessage();
+            String text = delta.getContent();
+            return text;
 
         }
         return "么么哒";
@@ -197,5 +208,28 @@ public class DingingController implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         DingTalkUtils.text(DingTalkUtils.get(), CommonConst.BAOBAO_ID, "海绵宝宝重启成功");
 
+    }
+
+    public static String openApi(String question) {
+        String json = String.format("{\n" +
+                "  \"model\": \"gpt-3.5-turbo\",\n" +
+                "  \"messages\": [\n" +
+                "    {\n" +
+                "      \"role\": \"user\",\n" +
+                "      \"content\": \"%s\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", question);
+        String result = HttpRequest.post("https://api.openai-sb.com/v1/chat/completions")
+                .body(json)
+                .bearerAuth("sb-3ff456bf41e5ef317433fa9adcc98cad9df85242b6df1717")
+                .execute().body();
+        System.out.println(result);
+        return result;
+    }
+
+    public static void main(String[] args) {
+        String msg = queryByQuestion("我好寂寞", null);
+        System.out.println(msg);
     }
 }
