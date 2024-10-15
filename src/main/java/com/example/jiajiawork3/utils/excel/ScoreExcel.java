@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class ScoreExcel {
     @Test
     public void repeatedRead() {
-        String fileName = "/Users/admin/Downloads/2023学年第一学期五年级科学学科期末成绩统计表.xls";
+        String fileName = "/Users/admin/Downloads/【第一单元成绩】501-504、507.xlsx";
         int lastSeparatorIndex = fileName.lastIndexOf('/');
         int extensionIndex = fileName.lastIndexOf('.');
         String extractedName = fileName.substring(lastSeparatorIndex + 1, extensionIndex);
@@ -53,10 +53,17 @@ public class ScoreExcel {
                 .findFirst()
                 .map(Student::getScore)
                 .orElse(0.0);
-        // A档算法 ：20% 同分都算
-        List<Student> top20PercentStudents = students.stream()
+        // A档算法 ：20% 同分都算,更接近20%
+        List<Student> top20PercentStudents_1 = students.stream()
                 .filter(student -> student.getScore() >= cutoffScore)
                 .collect(Collectors.toList());
+
+        List<Student> top20PercentStudents_2 = students.stream()
+                .filter(student -> student.getScore() > cutoffScore)
+                .collect(Collectors.toList());
+        int diff20_1 = Math.abs(top20PercentStudents_1.size() - (int)(studentSize * 0.2));
+        int diff20_2 = Math.abs(top20PercentStudents_2.size() - (int)(studentSize * 0.2));
+        List<Student> top20PercentStudents = diff20_1 < diff20_2 ? top20PercentStudents_1 : top20PercentStudents_2;
         Map<String, List<Student>> classStudentAMap = top20PercentStudents.stream().collect(Collectors.groupingBy(Student::getClassName, Collectors.toList()));
 
         int cutoffIndexB = top20PercentStudents.size() + (int) Math.round(studentSize * 0.25);
@@ -212,7 +219,7 @@ public class ScoreExcel {
             excelStudents.add(new ExcelStudent(student.getClassName(), student.getName(), student.getScore(), student.getLevel()));
         }
         List<ExcelStudent> toStudents = excelStudents.stream().sorted(Comparator.comparing(ExcelStudent::getClassName)).collect(Collectors.toList());
-        String studentFileName = "/Users/admin/Documents/student/学生统计" + System.currentTimeMillis() + ".xlsx";
+        String studentFileName = "/Users/admin/Documents/student/" +extractedName +"成绩等级" + System.currentTimeMillis() + ".xlsx";
         // 这里 需要指定写用哪个class去写，然后写到第一个sheet，名字为模板 然后文件流会自动关闭
         // 如果这里想使用03 则 传入excelType参数即可
         EasyExcel.write(studentFileName, ExcelStudent.class)
