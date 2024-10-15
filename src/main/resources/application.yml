@@ -14,9 +14,9 @@ spring:
     name: jiajiawork3
   # 配置数据源
   datasource:
-    url: jdbc:mysql://120.55.53.207:3306/jiajiawork3?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    url: jdbc:mysql://zhangtao1994.synology.me:11113/jiajiawork?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&useSSL=false
     username: root
-    password: Zt123456!
+    password: 123456
     driver-class-name: com.mysql.jdbc.Driver
     druid:
       filters: stat
@@ -32,6 +32,9 @@ spring:
       testOnReturn: false
       poolPreparedStatements: true
       maxOpenPreparedStatements: 20
+  elasticsearch:
+    rest:
+      uris: http://zhangtao1994.synology.me:11111
 
 # mybatis-plus相关配置
 mybatis-plus:

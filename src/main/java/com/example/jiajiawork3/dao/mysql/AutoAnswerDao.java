@@ -1,4 +1,4 @@
-package com.example.jiajiawork3.dao;
+package com.example.jiajiawork3.dao.mysql;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.jiajiawork3.domain.AutoAnswer;

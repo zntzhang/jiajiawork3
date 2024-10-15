@@ -24,7 +24,7 @@ import java.util.Objects;
  * @author: chunri
  * @create: 2022-05-18 16:39
  **/
-@Component
+//@Component
 public class DingDingSchedule {
 
     @PostConstruct

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@MapperScan("com.example.jiajiawork3.dao")
+@MapperScan("com.example.jiajiawork3.dao.mysql")
 @EnableScheduling
 public class Jiajiawork3Application {
 

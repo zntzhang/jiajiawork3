@@ -1,22 +1,24 @@
 package com.example.jiajiawork3.utils.excel;
 
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
+import com.example.jiajiawork3.dao.StudentScoreDao;
 import com.example.jiajiawork3.domain.excel.Class;
-import com.example.jiajiawork3.domain.excel.DemoDataListener;
-import com.example.jiajiawork3.domain.excel.ExcelStudent;
-import com.example.jiajiawork3.domain.excel.Student;
+import com.example.jiajiawork3.domain.excel.*;
 import com.example.jiajiawork3.utils.NumberUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Test;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -25,10 +27,20 @@ import java.util.stream.Collectors;
  * @Description TODO
  * @createTime 2023年08月30日 10:49:00
  */
+@Service
 public class ScoreExcel {
+
+    @Resource
+    private StudentScoreDao studentScoreDao;
+
+    @PostConstruct
+    public void init() {
+        importEs("/Users/admin/Downloads/23学期.xlsx");
+        importEs("/Users/admin/Downloads/24学期.xlsx");
+    }
     @Test
     public void repeatedRead() {
-        String fileName = "/Users/admin/Downloads/2023学年第一学期五年级科学学科期末成绩统计表.xls";
+        String fileName = "/Users/admin/Downloads/【给哥哥】2024-2第4单元数据.xlsx";
         int lastSeparatorIndex = fileName.lastIndexOf('/');
         int extensionIndex = fileName.lastIndexOf('.');
         String extractedName = fileName.substring(lastSeparatorIndex + 1, extensionIndex);
@@ -53,10 +65,17 @@ public class ScoreExcel {
                 .findFirst()
                 .map(Student::getScore)
                 .orElse(0.0);
-        // A档算法 ：20% 同分都算
-        List<Student> top20PercentStudents = students.stream()
+        // A档算法 ：20% 同分都算,更接近20%
+        List<Student> top20PercentStudents_1 = students.stream()
                 .filter(student -> student.getScore() >= cutoffScore)
                 .collect(Collectors.toList());
+
+        List<Student> top20PercentStudents_2 = students.stream()
+                .filter(student -> student.getScore() > cutoffScore)
+                .collect(Collectors.toList());
+        int diff20_1 = Math.abs(top20PercentStudents_1.size() - (int)(studentSize * 0.2));
+        int diff20_2 = Math.abs(top20PercentStudents_2.size() - (int)(studentSize * 0.2));
+        List<Student> top20PercentStudents = diff20_1 < diff20_2 ? top20PercentStudents_1 : top20PercentStudents_2;
         Map<String, List<Student>> classStudentAMap = top20PercentStudents.stream().collect(Collectors.groupingBy(Student::getClassName, Collectors.toList()));
 
         int cutoffIndexB = top20PercentStudents.size() + (int) Math.round(studentSize * 0.25);
@@ -212,7 +231,7 @@ public class ScoreExcel {
             excelStudents.add(new ExcelStudent(student.getClassName(), student.getName(), student.getScore(), student.getLevel()));
         }
         List<ExcelStudent> toStudents = excelStudents.stream().sorted(Comparator.comparing(ExcelStudent::getClassName)).collect(Collectors.toList());
-        String studentFileName = "/Users/admin/Documents/student/学生统计" + System.currentTimeMillis() + ".xlsx";
+        String studentFileName = "/Users/admin/Documents/student/" +extractedName +"成绩等级" + System.currentTimeMillis() + ".xlsx";
         // 这里 需要指定写用哪个class去写，然后写到第一个sheet，名字为模板 然后文件流会自动关闭
         // 如果这里想使用03 则 传入excelType参数即可
         EasyExcel.write(studentFileName, ExcelStudent.class)
@@ -221,6 +240,29 @@ public class ScoreExcel {
                     // 分页查询数据
                     return toStudents;
                 });
+
+
+    }
+
+//    @Test
+    public void importEs(String fileName) {
+//        String fileName = "/Users/admin/Documents/24-1期末学业水平监测三年级科学成绩.xlsx";
+        int lastSeparatorIndex = fileName.lastIndexOf('/');
+        int extensionIndex = fileName.lastIndexOf('.');
+        String extractedName = fileName.substring(lastSeparatorIndex + 1, extensionIndex);
+        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+
+        // 读取全部sheet
+        // 这里需要注意 DemoDataListener的doAfterAllAnalysed 会在每个sheet读取完毕后调用一次。然后所有sheet都会往同一个DemoDataListener里面写
+        EsDataListener demoDataListener = new EsDataListener();
+        EasyExcel.read(fileName, ExcelStudent.class, demoDataListener).doReadAll();
+        List<ExcelStudent> students = demoDataListener.getStudents()
+                .stream().filter(s -> !StringUtils.isEmpty(s.getClassName()))
+                .peek(s -> {s.setType(extractedName);
+                s.setId(snowflake.nextId());})
+                .collect(Collectors.toList());
+
+        studentScoreDao.saveAll(students);
 
 
     }
